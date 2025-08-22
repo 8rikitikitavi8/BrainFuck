@@ -1,0 +1,42 @@
+log_level: INFO
+
+brokers:
+  - name: non_tls_broker
+    queue_manager: QM1
+    channel: DEV.APP.SVRCONN
+    connection_name: mq-host1(1414)
+    user: app
+    password: secret
+    tls:
+      enabled: false
+
+  - name: tls_broker
+    queue_manager: QM2
+    channel: DEV.APP.SVRCONN
+    connection_name: mq-host2(1414)
+    user: app
+    password: secret
+    tls:
+      enabled: true
+      cipher: TLS_RSA_WITH_AES_256_CBC_SHA256
+      key_repository: /var/mqm/ssl/key
+      certificate_label: appcert
+
+routes:
+  - from:
+      broker: non_tls_broker
+      queue: DEV.QUEUE.1
+    to:
+      broker: tls_broker
+      queue: DEV.QUEUE.2
+    wait_interval_ms: 2000
+    idle_sleep_ms: 500
+
+  - source:
+      broker: tls_broker
+      queue: DEV.QUEUE.3
+    target:
+      broker: non_tls_broker
+      queue: DEV.QUEUE.4
+    wait_interval_ms: 3000
+    idle_sleep_ms: 750
